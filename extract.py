@@ -1,3 +1,5 @@
+#pip install pdfminer.six
+#pip install PyPDF2
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
@@ -28,5 +30,6 @@ def convert_pdf_to_txt(path):
     retstr.close()
     return text
 
-
-convert_pdf_to_txt('output/test_page_0.pdf')
+if __name__ == '__main__':
+    
+    convert_pdf_to_txt('output/test_page_0.pdf')
