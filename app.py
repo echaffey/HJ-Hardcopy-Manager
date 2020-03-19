@@ -1,38 +1,53 @@
+from flask import Flask, flash, request, redirect, render_template, url_for, send_from_directory
+from werkzeug.utils import secure_filename
 import os
-from PyPDF2 import PdfFileReader, PdfFileWriter
-import extract_1
-#https://stackoverflow.com/questions/26494211/extracting-text-from-a-pdf-file-using-pdfminer-in-python
 
 
-def pdf_splitter(path):
-    #get pdf name without the file extension
-    fname = os.path.splitext(os.path.basename(path))[0]
-    #load pdf file
-    pdf = PdfFileReader(path)
+UPLOAD_FOLDER = '/static/uploads'
+ALLOWED_EXTENSIONS = ['application/pdf', 'pdf']
 
-    #iterate through the pages and pull them out into their own separate PDF
-    for page in range(2):#pdf.getNumPages()):
-        pdf_writer = PdfFileWriter()
-        pdf_writer.addPage(pdf.getPage(page))
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY'] = 'HerffJones19'
 
-        #Save files to a separate output folder and add a counter to separate them
-        
-        '''
-        Insert text parser here
-          - pull out the P&O, WJ and State
-          - create the output filename as 'PO_State'
-        '''
+def allowed_file(filename):
+    print('.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS)
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-        text = extract_1.convert_pdf_to_txt(pdf.getPage(page))
-        print(text)
-        #final will be = 'output/{PO_num}_{State_name}.pdf'
-        output_filename = 'output/{}_page_{}.pdf'.format(fname, page)
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-        with open(output_filename, 'wb') as out:
-            pdf_writer.write(out)
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        # if 'file' not in request.files:
+        #     flash('File not found')
+        #     return redirect(request.url)
+        file = request.files['file']
 
-    print(f'Created: {output_filename}')
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+
+        #if a correct file is uploaded
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(f'{app.config["UPLOAD_FOLDER"]}/{filename}')
+            # return redirect(url_for('uploaded_file',
+            #                         filename=filename))
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file>
+      <input type=submit value=Upload>
+    </form>
+    '''
 
 if __name__ == '__main__':
-    path = 'test.pdf'
-    pdf_splitter(path)
+    app.run(debug=True)

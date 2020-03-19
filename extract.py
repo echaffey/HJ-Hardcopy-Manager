@@ -7,6 +7,11 @@ from pdfminer.pdfpage import PDFPage
 from io import StringIO
 
 def convert_pdf_to_txt(path):
+    """
+    Parses the text from a PDF at the given path.
+    path: filepath of the PDF to parse.
+    return: str
+    """
     rsrcmgr = PDFResourceManager()
     retstr = StringIO()
     codec = 'utf-8'
@@ -24,11 +29,13 @@ def convert_pdf_to_txt(path):
 
     text = retstr.getvalue()
 
+    #Make sure everything is closed as to not run into file issues
     fp.close()
     device.close()
     retstr.close()
+
+    #Returns PDF text as string
     return text
 
 if __name__ == '__main__':
-
-    convert_pdf_to_txt('output/test_page_0.pdf')
+    pass
