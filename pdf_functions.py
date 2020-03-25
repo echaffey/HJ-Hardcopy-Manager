@@ -4,6 +4,7 @@
 
 import os
 import re
+import pdf_parser
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
@@ -40,46 +41,49 @@ def pdf_splitter(path):
         output_filename = f'output/{fname}_page_{page}.pdf'
 
         #Save files to a separate output folder and add a counter to separate them
-        try:
-            counter = 0
-            #If the file doesnt exist already, create it. 
-            if not os.path.exists(output_filename):
-                with open(output_filename, 'wb') as out:
-                    pdf_writer.write(out)
-            else:
-                #Account for if theres the same zip and same state scanned at the same time
-                while os.path.exists(os.path.join(SAVE_FOLDER, f'delete_{fname}_{TIMESTAMP}{counter}.pdf')):
-                    counter += 1
-                    output_filename = os.path.join(SAVE_FOLDER, f'delete_{fname}_{TIMESTAMP}{counter}.pdf')
-                with open(output_filename, 'wb') as out:
-                    pdf_writer.write(out)
-        
-            #Raw text read in from PDFs, split into a list for easier retrieval
-            text = convert_pdf_to_txt(output_filename)
+        #try:
+        counter = 0
+        #If the file doesnt exist already, create it. 
+        if not os.path.exists(output_filename):
+            with open(output_filename, 'wb') as out:
+                pdf_writer.write(out)
+        else:
+            #Account for if theres the same zip and same state scanned at the same time
+            while os.path.exists(os.path.join(SAVE_FOLDER, f'delete_{fname}_{TIMESTAMP}{counter}.pdf')):
+                counter += 1
+                output_filename = os.path.join(SAVE_FOLDER, f'delete_{fname}_{TIMESTAMP}{counter}.pdf')
+            with open(output_filename, 'wb') as out:
+                pdf_writer.write(out)
+    
+        #Raw text read in from PDFs, split into a list for easier retrieval
+        text = convert_pdf_to_txt(output_filename)
 
-            #Find the 'P&O' numbers
-            PO_num = str(re.search(r'(P&O:\s*)(\d{7})', text).group(2))
+        #extract all data
+        pdf_parser.parse(text)
 
-            #Find the state initials
-            state = str(re.search(r'(\d{7}\s)([A-Z]{2})', text).group(2))
+        #Find the 'P&O' numbers
+        PO_num = str(re.search(r'(P&O:\s*)(\d{7})', text).group(2))
 
-            #rename the file to inclue the PO, State and page counter (to remove duplication issues)
-            new_filename = os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}.pdf')
+        #Find the state initials
+        state = str(re.search(r'(\d{7}\s)([A-Z]{2})', text).group(2))
 
-            #if the file doesnt exist, rename the temp filename to the new one
-            if not os.path.exists(new_filename):
-                os.rename(output_filename, new_filename)
+        #rename the file to inclue the PO, State and page counter (to remove duplication issues)
+        new_filename = os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}.pdf')
 
-            else:
-                #If it already exists, append a counter number to the end to not remove duplicates
-                while os.path.exists(os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}{counter}.pdf')):
-                    counter += 1
+        #if the file doesnt exist, rename the temp filename to the new one
+        if not os.path.exists(new_filename):
+            os.rename(output_filename, new_filename)
 
-                new_filename = os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}{counter}.pdf')
-                # os.remove(output_filename)
-                os.rename(output_filename, new_filename)
-        except:
-            pass
+        else:
+            #If it already exists, append a counter number to the end to not remove duplicates
+            while os.path.exists(os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}{counter}.pdf')):
+                counter += 1
+
+            new_filename = os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}{counter}.pdf')
+            # os.remove(output_filename)
+            os.rename(output_filename, new_filename)
+        # except:
+        #     pass
 
 def convert_pdf_to_txt(path):
     """
