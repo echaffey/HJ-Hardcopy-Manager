@@ -1,15 +1,21 @@
 #pip install pdfminer.six
 #pip install PyPDF2
 #https://stackoverflow.com/questions/26494211/extracting-text-from-a-pdf-file-using-pdfminer-in-python
+
 import os
-import emailer
+import re
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
-from io import StringIO
+from io import StringIO 
+import datetime
+import sys
 
+
+# SAVE_FOLDER = r'F:\\USERS\\PUBLIC\\Hardcopy Storage\\CSR Hardcopies'
+SAVE_FOLDER = os.path.join('output')
 
 def pdf_splitter(path):
     """
@@ -18,10 +24,12 @@ def pdf_splitter(path):
 
     path: filepath of the Oracle multi-page PDF
     """
-    #get pdf name without the file extension
+
+    #get pdf name without the file extension and load pdf file
     fname = os.path.splitext(os.path.basename(path))[0]
     #load pdf file
     pdf = PdfFileReader(path)
+    TIMESTAMP = datetime.datetime.now().strftime("%m%d_")
 
     #iterate through the pages and pull them out into their own separate PDF
     for page in range(pdf.getNumPages()):
@@ -32,33 +40,46 @@ def pdf_splitter(path):
         output_filename = f'output/{fname}_page_{page}.pdf'
 
         #Save files to a separate output folder and add a counter to separate them
-        with open(output_filename, 'wb') as out:
-            pdf_writer.write(out)
-
-        #Raw text read from PDFs, split into a list for easier retrieval
-        text = convert_pdf_to_txt(output_filename)
-        text_list = text.split('\n')
-
-        #Remove excess empty string values
-        while ('' in text_list):
-            text_list.remove('')
-
-        #Find the 'P&O' numbers
-        if (PO_pos := text_list.index('P&O:')) >= 0:
-            PO_num = text_list[PO_pos + 1].strip()
-            
-        #Error checking to make sure we're getting the right value.
-        #This needs to be updated later
-        if (state_pos := text_list.index('STATE:')) >= 0:
-            if len(text_list[state_pos + 2].strip()) == 2 and text_list[state_pos + 2].isalpha():
-                state = text_list[state_pos + 2].strip()
-            elif len(text_list[state_pos + 3].strip()) == 2 and text_list[state_pos + 3].isalpha():
-                state = text_list[state_pos + 3].strip()
+        try:
+            counter = 0
+            #If the file doesnt exist already, create it. 
+            if not os.path.exists(output_filename):
+                with open(output_filename, 'wb') as out:
+                    pdf_writer.write(out)
             else:
-                state = ''
+                #Account for if theres the same zip and same state scanned at the same time
+                while os.path.exists(os.path.join(SAVE_FOLDER, f'delete_{fname}_{TIMESTAMP}{counter}.pdf')):
+                    counter += 1
+                    output_filename = os.path.join(SAVE_FOLDER, f'delete_{fname}_{TIMESTAMP}{counter}.pdf')
+                with open(output_filename, 'wb') as out:
+                    pdf_writer.write(out)
+        
+            #Raw text read in from PDFs, split into a list for easier retrieval
+            text = convert_pdf_to_txt(output_filename)
 
-        #rename the file to inclue the PO, State and page counter (to remove duplication issues)
-        os.rename(output_filename, f'output/{PO_num}_{state}_{page}.pdf' )
+            #Find the 'P&O' numbers
+            PO_num = str(re.search(r'(P&O:\s*)(\d{7})', text).group(2))
+
+            #Find the state initials
+            state = str(re.search(r'(\d{7}\s)([A-Z]{2})', text).group(2))
+
+            #rename the file to inclue the PO, State and page counter (to remove duplication issues)
+            new_filename = os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}.pdf')
+
+            #if the file doesnt exist, rename the temp filename to the new one
+            if not os.path.exists(new_filename):
+                os.rename(output_filename, new_filename)
+
+            else:
+                #If it already exists, append a counter number to the end to not remove duplicates
+                while os.path.exists(os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}{counter}.pdf')):
+                    counter += 1
+
+                new_filename = os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}{counter}.pdf')
+                # os.remove(output_filename)
+                os.rename(output_filename, new_filename)
+        except:
+            pass
 
 def convert_pdf_to_txt(path):
     """
