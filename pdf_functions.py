@@ -80,10 +80,12 @@ def split_PDF(path):
                     counter += 1
 
                 new_filename = os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}{counter}.pdf')
-                # os.remove(output_filename)
                 os.rename(output_filename, new_filename)
         except:
             print('------ Something happened here, but let\'s just pretend it didn\'t ------')
+    
+    #Return number of pages in the document
+    return pdf.getNumPages()
 
 def convert_pdf_to_txt(path):
     """

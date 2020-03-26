@@ -54,12 +54,12 @@ def index():
             #Save the file to the static/uploads folder
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
-            #Split the file and collect the text
-            pf.split_PDF(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+            #Split the file and collect the text. Store the number of pages.
+            num_pages = pf.split_PDF(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
             #Delete the file once it's been split and parsed
             os.remove(os.path.join('static', 'uploads', filename))
-            alert(f'Uploaded {file.filename} successfully.', 'success')
+            alert(f'Uploaded {num_pages} page(s) from {file.filename} successfully.', 'success')
             
             return render_template('index.html', alerts=alert_messages)
 
