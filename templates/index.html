@@ -42,7 +42,7 @@
               <label for="file">Upload hardcopy PDF</label>
             </h4>
             <input type="file" class="form-control-file" name="file" />
-            <button type="submit" class="btn btn-primary mt-5">Upload</button>
+            <button type="submit" id="upload" class="btn btn-primary mt-5">Upload</button>
           </div>
         </form>
       </div>
@@ -70,8 +70,17 @@
   <script>
     window.jQuery ||
       document.write(
-        '<script src="js/vendor/jquery-3.4.1.min.js"><\/script>'
+        '<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"><\/script>'
       );
+  </script>
+
+  <script>
+    $(document).ready(() => {
+      $('#upload').click(() => {
+        $('#upload').html('Loading...');
+        $('#upload').attr('disabled', true);
+      });
+    });
   </script>
 
 </body>

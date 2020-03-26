@@ -2,8 +2,6 @@
 #pip install PyPDF2
 #https://stackoverflow.com/questions/26494211/extracting-text-from-a-pdf-file-using-pdfminer-in-python
 
-import os
-import re
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
@@ -11,7 +9,10 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from io import StringIO 
 import datetime
+import config
 import sys
+import os
+import re
 
 
 DEVELOPMENT = True
@@ -19,7 +20,7 @@ DEVELOPMENT = True
 if DEVELOPMENT:
     SAVE_FOLDER = os.path.join('output')
 else:
-    SAVE_FOLDER = r'F:\\USERS\\PUBLIC\\Hardcopy Storage\\CSR Hardcopies'
+    SAVE_FOLDER = config.SAVE_FOLDER
 
 def split_PDF(path):
     """

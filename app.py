@@ -1,6 +1,7 @@
 from flask import Flask, request, redirect, render_template, url_for, send_from_directory
 from werkzeug.utils import secure_filename
 import pdf_functions as pf
+import config
 import os
 import sys
 
@@ -11,7 +12,7 @@ alert_messages     = []
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['SECRET_KEY']    = 'HerffJones19'
+app.config['SECRET_KEY']    = config.SECRET_KEY
 
 def allowed_file(filename):
     """
@@ -23,9 +24,16 @@ def allowed_file(filename):
 def alert(message, category):
     """
     Display pop up message alerts.  Stored in reverse order for most recent message on top.
+    Maximum of 5 messages displayed at any one time.
+
+    message: message to be displayed.
+    category:  Bootstrap category for alert messages. This dictates the color of the alert.
     """
     global alert_messages
-    if len(alert_messages) > 4: alert_messages.pop()
+
+    MAX_ALERTS = 5
+
+    if len(alert_messages) > (MAX_ALERTS - 1): alert_messages.pop()
     alert_messages = [(message, category)] + alert_messages
 
 @app.route('/', methods=['GET', 'POST'])
