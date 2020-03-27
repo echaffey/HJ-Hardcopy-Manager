@@ -1,6 +1,3 @@
-#pip install pdfminer.six
-#pip install PyPDF2
-#https://stackoverflow.com/questions/26494211/extracting-text-from-a-pdf-file-using-pdfminer-in-python
 
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter

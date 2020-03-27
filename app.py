@@ -60,10 +60,11 @@ def index():
             filename = secure_filename(file.filename)
 
             #Save the file to the static/uploads folder
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+            if not os.path.exists(app.config['UPLOAD_FOLDER']): os.makedirs(app.config['UPLOAD_FOLDER'])
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             #Split the file and collect the text. Store the number of pages.
-            num_pages = pf.split_PDF(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+            num_pages = pf.split_PDF(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             #Delete the file once it's been split and parsed
             os.remove(os.path.join('static', 'uploads', filename))
