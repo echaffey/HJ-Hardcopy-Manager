@@ -4,4 +4,4 @@ Locally hosted Flask application to assist customer service representatives with
 
 Once split into individual files, each page is parsed for the item numbers and state and then renamed for easy searching.
 
-![alt text](https://imgur.com/a/IPGAAHk "Screenshot")
+![Screenshot](https://imgur.com/TZ1D3UU)
