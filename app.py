@@ -8,6 +8,7 @@ import sys
 #Directory to temporarily store uploaded file
 UPLOAD_FOLDER      = os.path.join('static', 'uploads')
 ALLOWED_EXTENSIONS = ['application/pdf', 'pdf']
+MAX_ALERTS = 5
 alert_messages     = []
 
 app = Flask(__name__)
@@ -31,8 +32,6 @@ def alert(message, category):
     """
     global alert_messages
 
-    MAX_ALERTS = 5
-
     if len(alert_messages) > (MAX_ALERTS - 1): alert_messages.pop()
     alert_messages = [(message, category)] + alert_messages
 
@@ -46,10 +45,10 @@ def index():
         if 'file' not in request.files:
             alert('File not found.', 'danger')
             return redirect(request.url)
+
         file = request.files['file']
 
-        # if user does not select file, browser also
-        # submit an empty part without filename
+        # if user does not select file
         if file.filename == '':
             alert('No file selected.', 'warning')
             return redirect(request.url)
@@ -75,4 +74,4 @@ def index():
     return render_template('index.html', alerts=alert_messages)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000)
