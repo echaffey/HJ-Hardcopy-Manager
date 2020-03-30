@@ -7,6 +7,7 @@ from pdfminer.pdfpage import PDFPage
 from io import StringIO 
 import datetime
 import config
+import shutil
 import sys
 import os
 import re
@@ -39,7 +40,7 @@ def split_PDF(path):
 
         #Create a temporary output name to create the file with
         #before parsing and renaming it later
-        output_filename = f'output/{fname}_page_{page}.pdf'
+        output_filename = os.path.join(SAVE_FOLDER, f'{fname}_page_{page}.pdf') #f'output/{fname}_page_{page}.pdf'
 
         #Save files to a separate output folder and add a counter to separate them
         try:
@@ -66,7 +67,8 @@ def split_PDF(path):
 
             #if the file doesnt exist, rename the temp filename to the new one
             if not os.path.exists(new_filename):
-                os.rename(output_filename, new_filename)
+                shutil.move(output_filename, new_filename)
+                # os.rename(output_filename, new_filename)
 
             else:
                 #If it already exists, append a counter number to the end to not remove duplicates
@@ -76,8 +78,8 @@ def split_PDF(path):
 
                 new_filename = os.path.join(SAVE_FOLDER, f'{PO_num}_{state}_{TIMESTAMP}{counter}.pdf')
                 os.rename(output_filename, new_filename)
-        except:
-            print('------ Something happened here, but let\'s just pretend it didn\'t ------')
+        except Exception as e:
+            print(e)
     
     #Return number of pages in the document
     return pdf.getNumPages()

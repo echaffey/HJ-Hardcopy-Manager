@@ -8,7 +8,7 @@ import sys
 #Directory to temporarily store uploaded file
 UPLOAD_FOLDER      = os.path.join('static', 'uploads')
 ALLOWED_EXTENSIONS = ['application/pdf', 'pdf']
-MAX_ALERTS = 5
+MAX_ALERTS         = 5
 alert_messages     = []
 
 app = Flask(__name__)
@@ -74,4 +74,4 @@ def index():
     return render_template('index.html', alerts=alert_messages)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
